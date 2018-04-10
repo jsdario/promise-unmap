@@ -26,4 +26,23 @@ function promiseUnmap (promises) {
     })
 }
 
-module.exports = promiseUnmap
+function promiseUnmapSerial (promises) {
+  const safePromises = promises.map(p => p.catch(err => err))
+
+  return safePromises.reduce((accPromises, currPromise) =>
+    accPromises.then(accResults => 
+      currPromise.then(currResult => [...accResults, currResult])
+    )
+  , Promise.resolve([]))
+    .then(results => {
+      if (results.some(r => r instanceof Error)) {
+        return Promise.reject(new PromiseUnmapError(results))
+      }
+      return results
+    })
+}
+
+module.exports = {
+  promiseUnmap,
+  promiseUnmapSerial,
+}

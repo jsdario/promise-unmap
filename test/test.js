@@ -1,5 +1,5 @@
 const bluebird = require('bluebird')
-const promiseUnmap = require('../')
+const {promiseUnmap, promiseUnmapSerial} = require('../')
 const chai = require('chai')
 
 chai.should()
@@ -29,6 +29,24 @@ describe('promiseUnmap', function() {
 
   it('should not fail if all are passing', function(done) {
     promiseUnmap(passingOps.map(o => o()))
+      .then(results => {
+        expect(results.length).to.equal(2)
+        done()
+      })
+      .catch(done)
+  })
+
+    it('should fail with mixed requests in serial', function(done) {
+    promiseUnmapSerial(ops.map(o => o()))
+      .catch(err => {
+        expect(err.errors.length).to.equal(2)
+        expect(err.fulfillments.length).to.equal(4)
+        done()
+      })
+  })
+
+  it('should not fail if all are passing in serial', function(done) {
+    promiseUnmapSerial(passingOps.map(o => o()))
       .then(results => {
         expect(results.length).to.equal(2)
         done()
