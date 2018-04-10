@@ -4,6 +4,9 @@
   "description": "Await until all promises resolve and reject",
   "main": "index.js",
   "scripts": {
+    "release:major": "npm version major && npm publish && git push --follow-tags",
+    "release:minor": "npm version minor && npm publish && git push --follow-tags",
+    "release:patch": "npm version patch && npm publish && git push --follow-tags",
     "test": "mocha",
     "coverage": "nyc mocha --exit"
   },
