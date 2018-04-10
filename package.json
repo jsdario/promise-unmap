@@ -1,0 +1,27 @@
+{
+  "name": "promise-unmap",
+  "version": "0.1.0",
+  "description": "Await until all promises resolve and reject",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jsdario/promise-unmap.git"
+  },
+  "keywords": [
+    "promise",
+    "bluebird",
+    "async",
+    "await",
+    "resolve",
+    "reject"
+  ],
+  "author": "jesus@netbeast.co",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jsdario/promise-unmap/issues"
+  },
+  "homepage": "https://github.com/jsdario/promise-unmap#readme"
+}
