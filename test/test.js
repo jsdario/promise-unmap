@@ -1,4 +1,3 @@
-const bluebird = require('bluebird')
 const {promiseUnmap, promiseUnmapSerial} = require('../')
 const chai = require('chai')
 
