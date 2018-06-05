@@ -1,5 +1,4 @@
 const {promiseUnmap, promiseUnmapSerial} = require('../lib')
-const Promise = require('bluebird')
 const chai = require('chai')
 
 chai.should()
@@ -8,14 +7,16 @@ const expect = chai.expect
 const ops = [
   async () => 'resolves 1',
   async () => { throw new Error('fails 2') },
-  Promise.resolve(),
+  Promise.resolve('resolves 3'),
   async () => 'resolves 4',
-  Promise.reject(new Error('fails 5')),
+  () => Promise.reject(new Error('fails 5')),
   async () => 'resolves 6',
 ]
 
-const passingOps = [async () => 'resolves', async () => 'resolves']
-
+const passingOps = [
+  async () => 'resolves',
+  Promise.resolve('resolves'),
+]
 
 describe('promiseUnmap', function() {
   it('should fail with mixed requests', function(done) {
@@ -53,4 +54,47 @@ describe('promiseUnmap', function() {
       })
       .catch(done)
   })
+
+  it('should begin all tasks immediately w/ promiseUnmap', function(done) {
+    let startedOps = 0
+    const postponedOps = [
+      createPostponedFuture(100, () => { startedOps = startedOps + 1 }),
+      createPostponedFuture(200, () => { startedOps = startedOps + 1 }),
+      createPostponedFuture(300, () => { startedOps = startedOps + 1 }),
+    ]
+
+    promiseUnmap(postponedOps)
+      .then(results => {
+        expect(startedOps).to.equal(3)
+        done()
+      })
+      .catch(done)
+      setTimeout(() => expect(startedOps).to.equal(3), 50)
+  })
+
+  it('should not begin a task until a previous task has finished w/ promiseUnmapSerial', function(done) {
+    let startedOps = 0
+    const postponedOps = [
+      createPostponedFuture(100, () => { startedOps = startedOps + 1 }),
+      createPostponedFuture(200, () => { startedOps = startedOps + 1 }),
+      createPostponedFuture(300, () => { startedOps = startedOps + 1 }),
+    ]
+
+    promiseUnmapSerial(postponedOps)
+      .then(results => {
+        expect(startedOps).to.equal(3)
+        done()
+      })
+      .catch(done)
+      expect(startedOps).to.equal(1)
+  })
 })
+
+function createPostponedFuture (timeoutInMs, onStart = () => {}) {
+  return function () {
+    onStart()
+    return new Promise((resolve, reject) => {
+      setTimeout(resolve, timeoutInMs)
+    })
+  }
+}

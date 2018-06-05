@@ -1,6 +1,4 @@
 
-import * as Promise from 'bluebird'
-
 type Future = Promise<any> | (() => Promise<any>)
 
 class ExtendableError extends Error {
@@ -15,18 +13,18 @@ class ExtendableError extends Error {
 class PromiseUnmapError extends ExtendableError {
   fulfillments: Array<any>
   errors: Array<Error>
-  constructor (results: Array<any> = [], message = 'One or more tasks failed') {
-    super(message)
+  constructor (results: Array<any> = []) {
+    super('One or more tasks failed')
     this.fulfillments = results.filter((r: any) => !(r instanceof Error))
     this.errors = results.filter((r: any) => r instanceof Error)
   }
 }
 
-export function promiseUnmap (promises: Array<Future>) {
-  return Promise.all(promises.map(p => {
-    return typeof p === 'function'
-      ? p().catch((err: Error) => err)
-      : p.catch((err: Error) => err)
+export function promiseUnmap (futures: Array<Future>) {
+  return Promise.all(futures.map(f => {
+    return typeof f === 'function'
+      ? f().catch((err: Error) => err)
+      : f.catch((err: Error) => err)
   })).then((results: Array<any>) => {
     if (results.some(r => r instanceof Error)) {
       throw new PromiseUnmapError(results)
@@ -36,11 +34,17 @@ export function promiseUnmap (promises: Array<Future>) {
 }
 
 
-export function promiseUnmapSerial (futures: Array<Future>) {
-  const safePromises = futures.map(f => {
-    const p = typeof f === 'function' ? f() : f
-    return p.catch(err => err)
-  })
+export async function promiseUnmapSerial (futures: Array<Future>) {
+  let safePromises: Array<Promise<any>> = []
+
+  for (const f of futures) {
+    if (typeof f === 'function') {
+      const p = await f().catch((err: Error) => err)
+      safePromises = [...safePromises, Promise.resolve(p)]
+    } else {
+      safePromises = [...safePromises, f.catch((err: Error) => err)]
+    }
+  }
 
   return safePromises.reduce((accPromises, currPromise) =>
     accPromises.then(accResults => 
