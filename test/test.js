@@ -1,4 +1,4 @@
-const {promiseUnmap, promiseUnmapSerial} = require('../')
+const {promiseUnmap, promiseUnmapSerial} = require('../lib')
 const chai = require('chai')
 
 chai.should()
@@ -18,7 +18,7 @@ const passingOps = [async () => 'resolves', async () => 'resolves']
 
 describe('promiseUnmap', function() {
   it('should fail with mixed requests', function(done) {
-    promiseUnmap(ops.map(o => o()))
+    promiseUnmap(ops)
       .catch(err => {
         expect(err.errors.length).to.equal(2)
         expect(err.fulfillments.length).to.equal(4)
@@ -38,7 +38,7 @@ describe('promiseUnmap', function() {
     it('should fail with mixed requests in serial', function(done) {
     promiseUnmapSerial(ops.map(o => o()))
       .catch(err => {
-        expect(err.errors.length).to.equal(2)
+        expect(err.errors).to.equal(2)
         expect(err.fulfillments.length).to.equal(4)
         done()
       })
