@@ -1,5 +1,5 @@
-const {promiseUnmap, promiseUnmapSerial} = require('../lib')
-const chai = require('chai')
+import {promiseUnmap, promiseUnmapSerial} from './'
+import * as chai from 'chai'
 
 chai.should()
 const expect = chai.expect
@@ -9,7 +9,7 @@ const ops = [
   async () => { throw new Error('fails 2') },
   Promise.resolve('resolves 3'),
   async () => 'resolves 4',
-  () => Promise.reject(new Error('fails 5')),
+  Promise.reject(new Error('fails 5')),
   async () => 'resolves 6',
 ]
 
@@ -90,7 +90,7 @@ describe('promiseUnmap', function() {
   })
 })
 
-function createPostponedFuture (timeoutInMs, onStart = () => {}) {
+function createPostponedFuture (timeoutInMs: number, onStart = () => {}) {
   return function () {
     onStart()
     return new Promise((resolve, reject) => {

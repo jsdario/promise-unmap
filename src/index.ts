@@ -13,7 +13,7 @@ class ExtendableError extends Error {
 class PromiseUnmapError extends ExtendableError {
   fulfillments: Array<any>
   errors: Array<Error>
-  constructor (results: Array<any> = []) {
+  constructor (results: Array<any>) {
     super('One or more tasks failed')
     this.fulfillments = results.filter((r: any) => !(r instanceof Error))
     this.errors = results.filter((r: any) => r instanceof Error)
