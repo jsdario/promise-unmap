@@ -8,3 +8,5 @@ coverage
 *spec.d.ts
 src
 typings
+.circleci
+tsconfig.json
