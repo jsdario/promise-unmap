@@ -1,6 +1,6 @@
 {
   "name": "promise-unmap",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Await until all promises resolve and reject",
   "main": "lib/index.js",
   "scripts": {
