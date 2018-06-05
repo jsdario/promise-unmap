@@ -1,4 +1,5 @@
 const {promiseUnmap, promiseUnmapSerial} = require('../lib')
+const Promise = require('bluebird')
 const chai = require('chai')
 
 chai.should()
@@ -7,9 +8,9 @@ const expect = chai.expect
 const ops = [
   async () => 'resolves 1',
   async () => { throw new Error('fails 2') },
-  async () => 'resolves 3',
+  Promise.resolve(),
   async () => 'resolves 4',
-  async () => { throw new Error('fails 5') },
+  Promise.reject(new Error('fails 5')),
   async () => 'resolves 6',
 ]
 
@@ -27,7 +28,7 @@ describe('promiseUnmap', function() {
   })
 
   it('should not fail if all are passing', function(done) {
-    promiseUnmap(passingOps.map(o => o()))
+    promiseUnmap(passingOps)
       .then(results => {
         expect(results.length).to.equal(2)
         done()
@@ -35,17 +36,17 @@ describe('promiseUnmap', function() {
       .catch(done)
   })
 
-    it('should fail with mixed requests in serial', function(done) {
-    promiseUnmapSerial(ops.map(o => o()))
+  it('should fail with mixed requests in serial', function(done) {
+    promiseUnmapSerial(ops)
       .catch(err => {
-        expect(err.errors).to.equal(2)
+        expect(err.errors.length).to.equal(2)
         expect(err.fulfillments.length).to.equal(4)
         done()
       })
   })
 
   it('should not fail if all are passing in serial', function(done) {
-    promiseUnmapSerial(passingOps.map(o => o()))
+    promiseUnmapSerial(passingOps)
       .then(results => {
         expect(results.length).to.equal(2)
         done()

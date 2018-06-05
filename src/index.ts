@@ -35,25 +35,19 @@ export function promiseUnmap (promises: Array<Future>) {
   })
 }
 
+
 export function promiseUnmapSerial (futures: Array<Future>) {
-  const fulfilled = futures
-    .reduce(
-      (accPromises, currPromise) => {
-        const acc = typeof accPromises === 'function' ? accPromises() : accPromises
-        return acc.then((accResults: Array<any>) => {
-          const p =
-            typeof currPromise === 'function' ? currPromise() : currPromise
+  const safePromises = futures.map(f => {
+    const p = typeof f === 'function' ? f() : f
+    return p.catch(err => err)
+  })
 
-          return p
-            .then((currResult: any) => [...accResults, currResult])
-            .catch((err: Error) => [...accResults, err])
-        })
-      }, Promise.resolve()
+  return safePromises.reduce((accPromises, currPromise) =>
+    accPromises.then(accResults => 
+      currPromise.then(currResult => [...accResults, currResult])
     )
-
-    const promises = typeof fulfilled === 'function' ? fulfilled() : fulfilled
-    
-    return promises.then((results: any) => {
+  , Promise.resolve([]))
+    .then(results => {
       if (results.some((r: any) => r instanceof Error)) {
         return Promise.reject(new PromiseUnmapError(results))
       }
